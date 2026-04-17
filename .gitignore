@@ -1,10 +1,6 @@
 # Local environment config (personal paths, drive mounts, etc.)
 src/local_config.py
 
-# Data and outputs
-cache/
-data/
-results/
 
 # Python
 __pycache__/
