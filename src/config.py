@@ -8,6 +8,16 @@ import torch
 
 _base = Path("/content") if os.path.exists("/content") else Path(__file__).parent.parent
 
+# ── Google Drive paths (used when Drive is mounted in Colab) ──────────────────
+_gdrive_root = Path("/content/drive/MyDrive/sae_probing")
+_gdrive_mounted = Path("/content/drive/MyDrive").exists()
+
+_cache_dir   = _gdrive_root / "cache"   if _gdrive_mounted else _base / "cache"
+_results_dir = _gdrive_root / "result"  if _gdrive_mounted else _base / "result"
+
+if _gdrive_mounted:
+    print(f"Google Drive detected — using Drive dirs: {_gdrive_root}")
+
 CONFIG = {
     # ── Model ──────────────────────────────────────────────────────────────
     "model_name":   "google/gemma-2-2b",
@@ -29,8 +39,10 @@ CONFIG = {
     "val_size":     0.2,
     "random_state": 42,
     # ── I/O ────────────────────────────────────────────────────────────────
-    "cache_dir":    _base / "cache",
-    "results_dir":  _base / "result",
+    "cache_dir":    _cache_dir,
+    "results_dir":  _results_dir,
+    # ── Google Drive ───────────────────────────────────────────────────────
+    "gdrive_mounted": _gdrive_mounted,
 }
 
 Path(CONFIG["cache_dir"]).mkdir(parents=True, exist_ok=True)
