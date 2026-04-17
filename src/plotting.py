@@ -69,7 +69,7 @@ def plot_figure5(
         no_sae   = no_s_list[col]
         with_sae = sae_list[col]
 
-        # ── top: AUC curves ──────────────────────────────────────────────
+        # top: AUC curves
         ax = axes[0, col]
         x_ns, y_ns = _mask(xs, no_sae)
         x_ws, y_ws = _mask(xs, with_sae)
@@ -92,7 +92,7 @@ def plot_figure5(
         if col == 0:
             ax.set_ylabel(f"Test AUC\n{dataset_name}", fontsize=8)
 
-        # ── bottom: Δ AUC ────────────────────────────────────────────────
+        # bottom: Δ AUC
         ax_d  = axes[1, col]
         delta = np.asarray(with_sae, dtype=float) - np.asarray(no_sae, dtype=float)
         x_d, d_d = _mask(xs, delta)

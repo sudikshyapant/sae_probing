@@ -11,9 +11,10 @@ from sklearn.metrics import roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
+from tqdm.notebook import tqdm
 
 
-# ── SAE probe ─────────────────────────────────────────────────────────────────
+# SAE probe
 
 def select_top_k_latents(Z_train: np.ndarray, y_train: np.ndarray,
                           k: int) -> np.ndarray:
@@ -32,7 +33,7 @@ def train_sae_probe(Z_tr, y_tr, Z_va, y_va, Z_te, y_te,
     C is chosen by maximum val AUC over the supplied grid.
     """
     best_C, best_val_auc, best_clf = None, -1.0, None
-    for C in C_values:
+    for C in tqdm(C_values, desc="SAE probe C search", leave=False):
         clf = LogisticRegression(C=C, penalty="l1", solver="liblinear",
                                  max_iter=10_000, random_state=42)
         clf.fit(Z_tr, y_tr)
@@ -45,7 +46,7 @@ def train_sae_probe(Z_tr, y_tr, Z_va, y_va, Z_te, y_te,
             "test_auc": test_auc, "model": best_clf}
 
 
-# ── Baseline probes ───────────────────────────────────────────────────────────
+# Baseline probes
 
 def probe_p1_logreg(X_tr, y_tr, X_va, y_va, X_te, y_te,
                     C_values: list) -> dict:
@@ -56,7 +57,7 @@ def probe_p1_logreg(X_tr, y_tr, X_va, y_va, X_te, y_te,
     X_te_s  = scaler.transform(X_te)
 
     best_C, best_val_auc, best_clf = None, -1.0, None
-    for C in C_values:
+    for C in tqdm(C_values, desc="p1 C search", leave=False):
         clf = LogisticRegression(C=C, penalty="l2", solver="lbfgs",
                                  max_iter=1_000, random_state=42)
         clf.fit(X_tr_s, y_tr)
@@ -79,7 +80,7 @@ def probe_p2_pca(X_tr, y_tr, X_va, y_va, X_te, y_te) -> dict:
     n_range = np.unique(np.logspace(0, np.log10(max(max_n, 1)), 10).astype(int))
 
     best_n, best_val_auc, best_clf, best_pca = None, -1.0, None, None
-    for n in n_range:
+    for n in tqdm(n_range, desc="p2 n_components search", leave=False):
         pca = PCA(n_components=int(n)).fit(X_tr_s)
         clf = LogisticRegression(C=1e12, penalty="l2", solver="lbfgs",
                                  max_iter=2_000, random_state=42)
@@ -104,7 +105,7 @@ def probe_p3_knn(X_tr, y_tr, X_va, y_va, X_te, y_te) -> dict:
     k_range = np.unique(np.logspace(0, np.log10(max(max_k, 1)), 10).astype(int))
 
     best_k, best_val_auc, best_clf = None, -1.0, None
-    for k in k_range:
+    for k in tqdm(k_range, desc="p3 k search", leave=False):
         clf = KNeighborsClassifier(n_neighbors=int(k))
         clf.fit(X_tr_s, y_tr)
         val_auc = roc_auc_score(y_va, clf.predict_proba(X_va_s)[:, 1])
@@ -127,7 +128,7 @@ def probe_p4_xgboost(X_tr, y_tr, X_va, y_va, X_te, y_te,
     rng = np.random.RandomState(random_state)
     best_val_auc, best_clf, best_hp = -1.0, None, None
 
-    for _ in range(n_iter):
+    for _ in tqdm(range(n_iter), desc="p4 XGBoost search", leave=False):
         hp = {
             "n_estimators":     int(rng.randint(50, 251)),
             "max_depth":        int(rng.randint(2, 6)),
@@ -159,7 +160,7 @@ def probe_p5_mlp(X_tr, y_tr, X_va, y_va, X_te, y_te,
     X_te_s = scaler.transform(X_te)
 
     best_val_auc, best_clf, best_hp = -1.0, None, None
-    for _ in range(n_iter):
+    for _ in tqdm(range(n_iter), desc="p5 MLP search", leave=False):
         depth  = int(rng.choice([1, 2, 3]))
         width  = int(rng.choice([16, 32, 64]))
         lr     = float(np.exp(rng.uniform(np.log(1e-4), np.log(1e-2))))

@@ -8,7 +8,7 @@ import torch
 
 _base = Path("/content") if os.path.exists("/content") else Path(__file__).parent.parent
 
-# ── Google Drive paths (used when Drive is mounted in Colab) ──────────────────
+# Google Drive paths (used when Drive is mounted in Colab)
 _gdrive_root = Path("/content/drive/MyDrive/sae_probing")
 _gdrive_mounted = Path("/content/drive/MyDrive").exists()
 
@@ -19,18 +19,18 @@ if _gdrive_mounted:
     print(f"Google Drive detected — using Drive dirs: {_gdrive_root}")
 
 CONFIG = {
-    # ── Model ──────────────────────────────────────────────────────────────
+    # Model
     "model_name":   "google/gemma-2-2b",
     "target_layer": 20,
     "batch_size":   8,
     "device":       "cuda" if torch.cuda.is_available() else "cpu",
-    # ── SAE ────────────────────────────────────────────────────────────────
+    # SAE
     "sae_release":  "gemma-scope-2b-pt-res-canonical",
     "sae_id":       "layer_20/width_16k/canonical",
-    # ── Probing ────────────────────────────────────────────────────────────
+    # Probing
     "k_values":     [16, 128],
     "C_values":     list(np.logspace(5, -5, 10)),   # paper Appendix C.3
-    # ── Data ───────────────────────────────────────────────────────────────
+    # Data
     "data_url":     (
         "https://raw.githubusercontent.com/sudikshyapant/sae_probing"
         "/main/data/154_athlete_sport_football.csv"
@@ -38,10 +38,10 @@ CONFIG = {
     "test_size":    0.4,
     "val_size":     0.2,
     "random_state": 42,
-    # ── I/O ────────────────────────────────────────────────────────────────
+    # I/O
     "cache_dir":    _cache_dir,
     "results_dir":  _results_dir,
-    # ── Google Drive ───────────────────────────────────────────────────────
+    # Google Drive
     "gdrive_mounted": _gdrive_mounted,
 }
 

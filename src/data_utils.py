@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-# ── Loading & splitting ───────────────────────────────────────────────────────
+# Loading & splitting
 
 def load_dataset(data_url: str) -> pd.DataFrame:
     """Download (or read) the CSV dataset and return a DataFrame."""
@@ -43,7 +43,7 @@ def make_splits(df: pd.DataFrame, test_size: float = 0.4,
     )
 
 
-# ── Regime helpers ────────────────────────────────────────────────────────────
+# Regime helpers
 
 def subsample_stratified(X_act: np.ndarray, Z: np.ndarray, y: np.ndarray,
                          n: int, rng: np.random.RandomState | None = None):

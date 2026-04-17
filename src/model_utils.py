@@ -8,7 +8,7 @@ from tqdm.notebook import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-# ── LLM ──────────────────────────────────────────────────────────────────────
+# LLM
 
 def load_model_and_tokenizer(config: dict):
     """Load Gemma-2-2B (or any causal LM) and its tokenizer.
@@ -84,7 +84,7 @@ def load_and_cache_activations(prompts_dict: dict[str, list[str]],
 
     model, tokenizer = load_model_and_tokenizer(config)
     cache = {}
-    for split, prompts in prompts_dict.items():
+    for split, prompts in tqdm(prompts_dict.items(), desc="Splits", total=len(prompts_dict)):
         cache[split] = extract_activations(
             prompts, model, tokenizer,
             config["target_layer"], config["batch_size"], config["device"],
@@ -98,7 +98,7 @@ def load_and_cache_activations(prompts_dict: dict[str, list[str]],
     return cache
 
 
-# ── SAE ──────────────────────────────────────────────────────────────────────
+# SAE
 
 def encode_with_sae(activations: np.ndarray, sae,
                     batch_size: int, device: str) -> np.ndarray:
@@ -147,10 +147,9 @@ def load_and_cache_latents(act_dict: dict[str, np.ndarray],
     sae.eval()
     print(f"SAE loaded. Width: {cfg_dict.get('d_sae', '?')}")
 
-    cache = {
-        split: encode_with_sae(acts, sae, config["batch_size"], config["device"])
-        for split, acts in act_dict.items()
-    }
+    cache = {}
+    for split, acts in tqdm(act_dict.items(), desc="Splits", total=len(act_dict)):
+        cache[split] = encode_with_sae(acts, sae, config["batch_size"], config["device"])
     torch.save(cache, cache_path)
     print(f"Latents saved. Train shape: {cache['train'].shape}")
 

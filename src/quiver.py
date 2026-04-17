@@ -1,6 +1,7 @@
 """Quiver-of-Arrows evaluation logic (paper Section 2.4 & 3.2)."""
 
 import numpy as np
+from tqdm.notebook import tqdm
 
 from probes import (probe_p1_logreg, probe_p2_pca, probe_p3_knn,
                     select_top_k_latents, train_sae_probe)
@@ -34,28 +35,28 @@ def run_all_probes(
         return {}
 
     results: dict = {}
+    probes_to_run = [
+        ("logreg",       lambda: probe_p1_logreg(X_tr, y_tr, X_va, y_va, X_te, y_te, C_vals)),
+        ("pca",          lambda: probe_p2_pca   (X_tr, y_tr, X_va, y_va, X_te, y_te)),
+        ("knn",          lambda: probe_p3_knn   (X_tr, y_tr, X_va, y_va, X_te, y_te)),
+        (f"sae_k{sae_k}", None),
+    ]
 
-    for name, fn in [
-        ("logreg", lambda: probe_p1_logreg(X_tr, y_tr, X_va, y_va, X_te, y_te, C_vals)),
-        ("pca",    lambda: probe_p2_pca   (X_tr, y_tr, X_va, y_va, X_te, y_te)),
-        ("knn",    lambda: probe_p3_knn   (X_tr, y_tr, X_va, y_va, X_te, y_te)),
-    ]:
+    for name, fn in tqdm(probes_to_run, desc="Probes", leave=False):
         try:
-            results[name] = fn()
+            if name.startswith("sae_"):
+                k_actual = min(sae_k, Z_tr.shape[1])
+                feat_idx = select_top_k_latents(Z_tr, y_tr, k_actual)
+                results[name] = train_sae_probe(
+                    Z_tr[:, feat_idx], y_tr,
+                    Z_va[:, feat_idx], y_va,
+                    Z_te[:, feat_idx], y_te,
+                    C_vals,
+                )
+            else:
+                results[name] = fn()
         except Exception:
             pass
-
-    try:
-        k_actual = min(sae_k, Z_tr.shape[1])
-        feat_idx = select_top_k_latents(Z_tr, y_tr, k_actual)
-        results[f"sae_k{sae_k}"] = train_sae_probe(
-            Z_tr[:, feat_idx], y_tr,
-            Z_va[:, feat_idx], y_va,
-            Z_te[:, feat_idx], y_te,
-            C_vals,
-        )
-    except Exception:
-        pass
 
     return results
 
