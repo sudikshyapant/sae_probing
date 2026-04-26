@@ -14,3 +14,6 @@ venv/
 
 # OS
 .DS_Store
+
+# Large cache files (exceed GitHub's 100 MB limit)
+cache/
