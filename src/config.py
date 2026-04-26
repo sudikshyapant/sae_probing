@@ -48,6 +48,7 @@ CONFIG = {
         "https://raw.githubusercontent.com/sudikshyapant/sae_probing"
         "/main/data/154_athlete_sport_football.csv"
     ),
+    "test_size":    0.2,
     "val_size":     0.2,
     "random_state": 42,
     # I/O
