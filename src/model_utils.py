@@ -33,7 +33,7 @@ def load_model_and_tokenizer(config: dict):
     model = AutoModelForCausalLM.from_pretrained(
         config["model_name"],
         output_hidden_states=True,
-        torch_dtype=torch.float16 if config["device"] == "cuda" else torch.float32,
+        dtype=torch.float16 if config["device"] == "cuda" else torch.float32,
     ).to(config["device"])
     model.eval()
     print("Model loaded.")
